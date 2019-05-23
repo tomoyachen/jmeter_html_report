@@ -93,16 +93,14 @@ public class HtmlReport {
 			ArrayList val = (ArrayList) testSuite.getValue();
 //			System.out.println(val);
 			String TestCaseCount = String.valueOf(val.size());
-			System.out.println(testSuiteIndex);
 			htmlBody += addTestSuite(testSuiteIndex, key, TestCaseCount, "9", "9", "9");
 			
 //			System.out.println(addTestSuite(key, "9", "9", "9", "9"));
 			
-			
-			
-			Iterator testCases = val.iterator();
+
 			
 			//Ñ­»·testcases
+			Iterator testCases = val.iterator();
 			int testCaseIndex = 1;
 			while (testCases.hasNext()) {
 				HashMap testCase =  (HashMap) testCases.next();
