@@ -41,7 +41,7 @@ public class HtmlReport {
 	private static int passCount = 0;
 	private static int failCount = 0;
 	private static int errorCount = 0;
-	
+
 	private static int totalTestCaseCount = 0;
 	private static int totalPassCount = 0;
 	private static int totalFailCount = 0;
@@ -61,42 +61,47 @@ public class HtmlReport {
 			HashMap testCase = (HashMap) testCases.next();
 			String successAsString = (String) testCase.get("success");
 			if (successAsString.equals("true")) {
-				HtmlReport.passCount ++;
+				HtmlReport.passCount++;
 			} else {
-				HtmlReport.failCount ++;
+				
+				// 异常用例数
+				String responseCode = (String) testCase.get("responseCode");
+				try {
+					Integer.parseInt(responseCode);
+					HtmlReport.failCount++;
+
+				} catch (NumberFormatException e) {
+					HtmlReport.errorCount++;
+				}
 
 			}
-			
-			HtmlReport.totalTestCaseCount ++;
+
+
+
+			HtmlReport.totalTestCaseCount++;
 
 		}
-		
+
 		HtmlReport.totalTestCaseCount += HtmlReport.testCaseCount;
 		HtmlReport.totalPassCount += HtmlReport.passCount;
 		HtmlReport.totalFailCount += HtmlReport.failCount;
 		HtmlReport.totalErrorCount += HtmlReport.errorCount;
-		
-		
 
 	}
-	
-	
+
 	private static String getPercent(int num1, int num2) {
- 
+
 		// 创建一个数值格式化对象
 		NumberFormat numberFormat = NumberFormat.getInstance();
- 
+
 		// 设置精确到小数点后2位
 		numberFormat.setMaximumFractionDigits(2);
- 
+
 		String result = numberFormat.format((float) num1 / (float) num2 * 100);
 
 		return result + "%";
-		
+
 	}
-
-	
-
 
 	private static String addTestSuite(int TestSuiteIndex, String TestStuteName, String TestCaseCount, String PassCount,
 			String FailCount, String ErrorCount) {
@@ -113,7 +118,7 @@ public class HtmlReport {
 	}
 
 	private static String addTestCase(int TestSuiteIndex, int TestCaseIndex, String TestCaseName, String pre,
-			boolean success) {
+			boolean success, boolean error) {
 		String TestCase = "";
 		String id = "pt" + TestSuiteIndex + "_" + TestCaseIndex;
 		String hiddenRowClass = "none";
@@ -128,6 +133,10 @@ public class HtmlReport {
 			successClass = "success";
 			hiddenPreClass = "";
 			text = "通过";
+		}
+		
+		if(error) {
+			text = "错误";
 		}
 
 //		默认收起错误信息
@@ -148,13 +157,12 @@ public class HtmlReport {
 
 		return TestCase;
 	}
-	
+
 	private static String htmlBody = "";
-	
+
 	public static void genHtmlBody() {
 		HtmlReport.htmlBody = getHtmlBody();
 	}
-	
 
 	public static String getHtmlBody() {
 
@@ -190,33 +198,41 @@ public class HtmlReport {
 			while (testCases.hasNext()) {
 				HashMap testCase = (HashMap) testCases.next();
 				String testCaseName = (String) testCase.get("label");
-				
-				//用例执行结果
+
+				// 用例执行结果
 				String pre = "";
-				pre += "请求地址: " + (String) testCase.get("URL") + "\r\n";
-				pre += "HTTP码: " + (String) testCase.get("responseCode") + "\r\n";
 				
+				if (!(testCase.get("URL") == null) && !(boolean) testCase.get("URL").equals("")) {
+					pre += "请求地址: " + (String) testCase.get("URL") + "\r\n";
+				}
+				pre += "HTTP码: " + (String) testCase.get("responseCode") + "\r\n";
+
+				
+				boolean ifSuccess = false;
+				boolean ifError = false;
 				
 				if ((boolean) testCase.get("success").equals("true")) {
+					ifSuccess = true;
 					pre += "执行结果: 成功" + "\r\n ";
-				}else {
+				} else if ((boolean) testCase.get("responseMessage").equals("OK")){
+					ifSuccess = false;
 					pre += "执行结果: 失败" + "\r\n ";
 					pre += "断言结果: " + (String) testCase.get("failureMessage") + "\r\n";
+				}else {
+					ifError = true;
+					pre += "执行结果: 错误" + "\r\n ";
+					pre += "错误结果: " + (String) testCase.get("responseMessage") + "\r\n";
 				}
-				
 
 				String successAsString = (String) testCase.get("success");
-				boolean success = false;
-				if (successAsString.equals("true")) {
-					success = true;
-				}
+
 
 				// 是否加序号
 				if (ifAddIndex) {
 					testCaseName = String.valueOf(testSuiteIndex) + ". " + String.valueOf(testCaseIndex) + testCaseName;
 				}
 
-				htmlBody += addTestCase(testSuiteIndex, testCaseIndex, testCaseName, pre, success);
+				htmlBody += addTestCase(testSuiteIndex, testCaseIndex, testCaseName, pre, ifSuccess, ifError);
 
 				testCaseIndex++;
 
@@ -317,11 +333,14 @@ public class HtmlReport {
 				+ "                        </div>\r\n" + "\r\n"
 				+ "                        <div class=\"sidebar-section\">\r\n"
 				+ "                            <h3 class=\"sidebar-section__title\">结果</h3>\r\n"
-				+ "                            <a class=\"btn btn-primary\" href='javascript:showCase(0)'>概要 " + getPercent(HtmlReport.totalPassCount, HtmlReport.totalTestCaseCount) + " </a><br/><br/>\r\n"
-				+ "<a class=\"btn btn-danger\" href='javascript:showCase(1)'>失败 " + HtmlReport.totalFailCount +" </a><br/><br/>\r\n"
-				+ "<a class=\"btn btn-success\" href='javascript:showCase(2)'>通过 " + HtmlReport.totalPassCount +" </a><br/><br/>\r\n"
-				+ "<a class=\"btn btn-info\" href='javascript:showCase(3)'>所有 " + HtmlReport.totalTestCaseCount + " </a>\r\n" + "\r\n" + "\r\n"
-				+ "                        </div>\r\n" + "                        <div class=\"sidebar-section\">\r\n"
+				+ "                            <a class=\"btn btn-primary\" href='javascript:showCase(0)'>概要 "
+				+ getPercent(HtmlReport.totalPassCount, HtmlReport.totalTestCaseCount) + " </a><br/><br/>\r\n"
+				+ "<a class=\"btn btn-danger\" href='javascript:showCase(1)'>失败 " + HtmlReport.totalFailCount
+				+ " </a><br/><br/>\r\n" + "<a class=\"btn btn-success\" href='javascript:showCase(2)'>通过 "
+				+ HtmlReport.totalPassCount + " </a><br/><br/>\r\n"
+				+ "<a class=\"btn btn-info\" href='javascript:showCase(3)'>所有 " + HtmlReport.totalTestCaseCount
+				+ " </a>\r\n" + "\r\n" + "\r\n" + "                        </div>\r\n"
+				+ "                        <div class=\"sidebar-section\">\r\n"
 				+ "                            <h3 class=\"sidebar-section__title\">其他</h3>\r\n"
 				+ "                                    <p>本报告站点服务由服务中心提供,用于支持由<a href=\"http:\">XXXX</a>生产的测试报告预览，管理员为<a href=\"http:\">XXXX</a></p>\r\n"
 				+ "                                </div>\r\n" + "\r\n" + "                    </div>\r\n" + "\r\n"
@@ -333,18 +352,16 @@ public class HtmlReport {
 				+ "<col align='right' />\r\n" + "</colgroup>\r\n"
 				+ "<tr id='header_row' class=\"text-center success\" style=\"font-weight: bold;font-size: 14px;\">\r\n"
 				+ "    <td>用例集/测试用例</td>\r\n" + "    <td>总计</td>\r\n" + "    <td>通过</td>\r\n" + "    <td>失败</td>\r\n"
-				+ "    <td>错误</td>\r\n" + "    <td>详细</td>\r\n" + "</tr>\r\n" + 
-				"\r\n" +
+				+ "    <td>错误</td>\r\n" + "    <td>详细</td>\r\n" + "</tr>\r\n" + "\r\n" +
 
 				HtmlReport.htmlBody +
 
 				"\r\n" + "\r\n" + "<tr id='total_row' class=\"text-center active\">\r\n" + "    <td>总计</td>\r\n"
-				+ "    <td>"  + HtmlReport.totalTestCaseCount + "</td>\r\n" +
-				"    <td>"  + HtmlReport.totalPassCount + "</td>\r\n" + 
-				"    <td>"  + HtmlReport.totalFailCount + "</td>\r\n" + 
-				"    <td>"  + HtmlReport.totalErrorCount + "</td>\r\n"
-				+ "    <td>通过率：" +  getPercent(HtmlReport.totalPassCount, HtmlReport.totalTestCaseCount) + "</td>\r\n" + "</tr>\r\n" + "</table>\r\n" + "\r\n"
-				+ "                        <div id='ending'>&nbsp;</div>\r\n"
+				+ "    <td>" + HtmlReport.totalTestCaseCount + "</td>\r\n" + "    <td>" + HtmlReport.totalPassCount
+				+ "</td>\r\n" + "    <td>" + HtmlReport.totalFailCount + "</td>\r\n" + "    <td>"
+				+ HtmlReport.totalErrorCount + "</td>\r\n" + "    <td>通过率："
+				+ getPercent(HtmlReport.totalPassCount, HtmlReport.totalTestCaseCount) + "</td>\r\n" + "</tr>\r\n"
+				+ "</table>\r\n" + "\r\n" + "                        <div id='ending'>&nbsp;</div>\r\n"
 				+ "    <div style=\" position:fixed;right:50px; bottom:30px; width:20px; height:20px;cursor:pointer\">\r\n"
 				+ "    <a href=\"#\"><span class=\"glyphicon glyphicon-eject\" style = \"font-size:30px;\" aria-hidden=\"true\">\r\n"
 				+ "    </span></a></div>\r\n" + "    \r\n" + "                    </div>\r\n" + "</body>\r\n"

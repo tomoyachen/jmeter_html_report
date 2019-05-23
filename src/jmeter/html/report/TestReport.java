@@ -19,6 +19,8 @@ import java.util.LinkedHashMap;
 //java -Dcsv=demo.jtl -Dhtml=demo.html -Dtester=张三 -Dreport=某项目测试报告 -jar report.jar
 
 public class TestReport {
+	
+	private static boolean ifDebug = false;
 
 	
 	//csv文件地址
@@ -32,7 +34,7 @@ public class TestReport {
 	//测试人员
 	public static String REPORT_NAME = System.getProperty("report"); 
 	
-	private static boolean ifDebug = false;
+	
 	
 	private static void init(){
 		
@@ -43,7 +45,7 @@ public class TestReport {
 		System.out.println("--开始生成------------------------------------------------------");
 		
 		if(ifDebug) {
-			CSV_PATH = "E:\\Desktop\\新增Banner接口.jtl";
+			CSV_PATH = "E:\\Desktop\\dingding.jtl";
 			HTML_PATH = "E:\\Desktop\\新增Banner接口.html";
 			TESTER_NAME = "测试人员";
 			REPORT_NAME = "测试报告";
@@ -102,7 +104,7 @@ public class TestReport {
 		LinkedHashMap<String, ArrayList> reportMap = new LinkedHashMap<>();
 		
 //		有用的列名数组
-		String [] csvTitle = {"elapsed","label","responseCode","threadName","success","failureMessage","URL"};
+		String [] csvTitle = {"elapsed","label","responseCode", "responseMessage", "threadName","success","failureMessage","URL"};
 		String groupTitle = "threadName";
 		
 		String startTime = "";
