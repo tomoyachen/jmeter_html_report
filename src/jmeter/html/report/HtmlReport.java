@@ -22,6 +22,9 @@ public class HtmlReport {
 	
 	private static String totalTime = "";
 	
+	//是否加序号
+	private static boolean ifAddIndex = false;
+	
 	public static LinkedHashMap<String, ArrayList> reportMap = null;
 	
 	
@@ -52,20 +55,41 @@ public class HtmlReport {
 	}
 	
 	
-	private static String addTestCase(int TestSuiteIndex, int TestCaseIndex, String TestCaseName, String pre){
+	private static String addTestCase(int TestSuiteIndex, int TestCaseIndex, String TestCaseName, String pre, boolean success){
 		String TestCase = "";
 		String id = "pt" + TestSuiteIndex + "_" + TestCaseIndex;
+		String hiddenRowClass = "none";
+		String passClass = "failCase";
+		String successClass = "danger";
+		String hiddenPreClass = "in";
+		String text = "失败";
+		
+		if(success) {
+			hiddenRowClass = "hiddenRow";
+			passClass = "passCase";
+			successClass = "success";
+			hiddenPreClass = "";
+			text = "通过";
+		}
+		
+//		默认收起错误信息
+		boolean ifCollapsed = false;
+		String collapsed = "";
+//		如果展开错误信息
+		if (ifCollapsed) {
+			collapsed = "collapsed";
+		}
+		
+		
+		
 		TestCase = "" + 
-				"<tr id='" + id +"' class='hiddenRow'>\r\n" + 
-				"    <td class='passCase'><div class='testcase'>" + TestCaseName + "</div></td>\r\n" + 
+				"<tr id='" + id +"' class='" + hiddenRowClass +"'>\r\n" + 
+				"    <td class='" + passClass + "'><div class='testcase'>" + TestCaseName + "</div></td>\r\n" + 
 				"    <td colspan='5' align='center'>\r\n" + 
-				"    <!--默认展开错误信息 -Findyou\r\n" + 
-				"    <button id='btn_"  + id + "' type=\"button\"  class=\"btn btn-success btn-xs \" data-toggle=\"collapse\" data-target='#div_"  + id + "'>通过</button>\r\n" + 
-				"    <div id='div_"  + id + "' class=\"collapse\">  -->\r\n" + 
 				"\r\n" + 
 				"    <!-- 默认收起错误信息 -Findyou -->\r\n" + 
-				"    <button id='btn_"  + id + "' type=\"button\"  class=\"btn btn-success btn-xs collapsed\" data-toggle=\"collapse\" data-target='#div_"  + id + "'>通过</button>\r\n" + 
-				"    <div id='div_"  + id + "' class=\"collapse\">\r\n" + 
+				"    <button id='btn_"  + id + "' type=\"button\"  class=\"btn btn-"  + successClass +" btn-xs " + collapsed + "\" data-toggle=\"collapse\" data-target='#div_"  + id + "'>" + text +"</button>\r\n" + 
+				"    <div id='div_"  + id + "' class=\"collapse " + hiddenPreClass  +"\">\r\n" + 
 				"    <pre>\r\n" + 
 				"    \r\n" + 
 				pre + 
@@ -90,10 +114,16 @@ public class HtmlReport {
 		while (testSuites.hasNext()) {
 			Map.Entry testSuite = (Map.Entry) testSuites.next();
 			String key = (String) testSuite.getKey(); //测试集名称
+			String testSuiteName = key.split(" ")[0];
+			
+			//是否加序号
+			if (ifAddIndex) {
+				testSuiteName = String.valueOf(testSuiteIndex) + ". " + testSuiteName;
+			}
 			ArrayList val = (ArrayList) testSuite.getValue();
 //			System.out.println(val);
 			String TestCaseCount = String.valueOf(val.size());
-			htmlBody += addTestSuite(testSuiteIndex, key, TestCaseCount, "9", "9", "9");
+			htmlBody += addTestSuite(testSuiteIndex, testSuiteName, TestCaseCount, "9", "9", "9");
 			
 //			System.out.println(addTestSuite(key, "9", "9", "9", "9"));
 			
@@ -104,9 +134,21 @@ public class HtmlReport {
 			int testCaseIndex = 1;
 			while (testCases.hasNext()) {
 				HashMap testCase =  (HashMap) testCases.next();
-				String testCaseName = (String) testCase.get("label");
-				System.out.println(testSuiteIndex + ", "  + testCaseIndex);
-				htmlBody += addTestCase(testSuiteIndex, testCaseIndex, testCaseName, testCaseName);
+				String testCaseName = (String) testCase.get("label");			
+				String pre = (String) testCase.get("failureMessage");
+				String successAsString = (String) testCase.get("success");
+				boolean success = false;
+				if(successAsString.equals("true")) {
+					success = true;
+				}
+				
+				//是否加序号
+				if (ifAddIndex) {
+					testCaseName = String.valueOf(testSuiteIndex) + ". " + String.valueOf(testCaseIndex) + testCaseName;
+				}
+				
+				
+				htmlBody += addTestCase(testSuiteIndex, testCaseIndex, testCaseName, pre, success);
 				
 				testCaseIndex ++;
 
