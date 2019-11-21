@@ -5,4 +5,4 @@
 Export -> Runnable JAR file -> 选择主程序清单
 
 #执行方式 cmd
-java -Dcsv=XXXX.jtl -Dreport=XXXX.html -jar report.jar
+java -Dcsv=demo.jtl -Dhtml=demo.html -Dtester=张三 -Dreport=某项目测试报告 -jar report.jar
