@@ -120,7 +120,7 @@ public class HtmlReport {
 	private static String addTestCase(int TestSuiteIndex, int TestCaseIndex, String TestCaseName, String pre,
 			boolean success, boolean error) {
 		String TestCase = "";
-		String id = "pt" + TestSuiteIndex + "_" + TestCaseIndex;
+		String id = TestSuiteIndex + "_" + TestCaseIndex;
 		String hiddenRowClass = "none";
 		String passClass = "failCase";
 		String successClass = "danger";
@@ -128,6 +128,7 @@ public class HtmlReport {
 		String text = "Ê§°Ü";
 
 		if (success) {
+			id = "pt" + id;
 			hiddenRowClass = "hiddenRow";
 			passClass = "passCase";
 			successClass = "success";
@@ -136,6 +137,7 @@ public class HtmlReport {
 		}
 		
 		if(error) {
+			id = "ft" + id;
 			text = "´íÎó";
 		}
 
