@@ -24,7 +24,8 @@ public class TestReport {
 
 	
 	//csv文件地址
-	public static String CSV_PATH = System.getProperty("csv");
+	public static String CSV_PATH = System.getProperty("jtl");
+	
 	//HTML文件地址
 	public static String HTML_PATH = System.getProperty("html"); 
 
@@ -40,7 +41,7 @@ public class TestReport {
 		
 		System.out.println("--欢迎使用------------------------------------------------------");
 		System.out.println("执行命令请参考以下示例: ");
-		System.out.println("java -Dcsv=D:\\demo.jtl -Dhtml=D:\\demo.html -Dtester=张三 -Dreport=某项目测试报告 -jar report.jar");
+		System.out.println("java -jar -Djtl=D:\\demo.jtl -Dhtml=D:\\demo.html -Dtester=张三 -Dreport=某项目测试报告 report.jar");
 		
 		System.out.println("--开始生成------------------------------------------------------");
 		
@@ -51,7 +52,7 @@ public class TestReport {
 			REPORT_NAME = "测试报告";
 		}
 		if (CSV_PATH == null || CSV_PATH.equals("")) {
-			 System.out.println("WARN: 未获取到CSV文件路径参数!");
+			 System.out.println("WARN: 未获取到jtl文件路径参数!");
 			 System.out.println("ERROR: 程序无法正常执行!");
 			 System.exit(0);
 		 }
